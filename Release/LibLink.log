@@ -1,0 +1,26 @@
+﻿  LibLink.cpp
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(147,24): warning C4018: “<”: 有符号/无符号不匹配
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(92,17): warning C4101: “color_type”: 未引用的局部变量
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(92,29): warning C4101: “interlace_type”: 未引用的局部变量
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(92,6): warning C4101: “bit_depth”: 未引用的局部变量
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(212,50): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(212,41): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(215,30): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(216,30): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(217,30): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(360,35): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(360,26): warning C4244: “参数”: 从“double”转换到“float”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(365,74): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(366,74): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(367,74): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(368,74): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(381,157): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(382,157): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(383,157): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(384,157): warning C4244: “=”: 从“float”转换到“uint8_t”，可能丢失数据
+  正在生成代码
+  2 of 20 functions (10.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  LibLink.vcxproj -> C:\Users\Xinyu\source\repos\LibLink\Release\LibLink.exe
