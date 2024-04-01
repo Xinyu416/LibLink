@@ -11,6 +11,32 @@ struct Color
 	uint8_t r, g, b, a;
 };
 
+struct ImageData
+{
+	size_t width;
+	size_t height;
+	size_t chanel;
+	size_t sizeofRow;
+	uint8_t* pixel;
+};
+
+struct Point2
+{
+	float x;
+	float y;
+};
+
+struct Triangle
+{
+	Point2 A, B, C;
+};
+
+struct TriangleFactor
+{
+	float alpha, beta, gama;
+};
+
+
 void png_error_callback(png_structp pngPtr, png_const_charp error)
 {
 	printf("png_error_callback : %s", error);
@@ -160,28 +186,6 @@ void readPNG(const char* filename, Uint32 depth)
 	SDLDraw(pixel, width, height, _sizeOfRow, depth);
 }
 
-struct ImageData
-{
-	size_t width;
-	size_t height;
-	size_t chanel;
-	size_t sizeofRow;
-	uint8_t* pixel;
-};
-struct Point2
-{
-	float x;
-	float y;
-};
-struct Triangle
-{
-	Point2 A, B, C;
-};
-
-struct TriangleFactor
-{
-	float alpha, beta, gama;
-};
 
 TriangleFactor inTriangle(float x, float y, Triangle P)
 {
@@ -199,9 +203,9 @@ TriangleFactor inTriangle(float x, float y, Triangle P)
 void drawTriangle()
 {
 	ImageData image = { 200,150,3,200 * 3 };
-	Point2 pA = { 10 ,20 };
-	Point2 pB = { 107 ,38 };
-	Point2 pC = { 42 ,115 };
+	Point2 pA = { 10 ,20 }; //(255, 0, 0)
+	Point2 pB = { 107 ,38 }; //(0, 255, 0)
+	Point2 pC = { 42 ,115 };//(0, 0, 255)
 	Triangle tri = { pA,pB,pC };
 	uint8_t* pixel = (uint8_t*)malloc(image.sizeofRow * image.height);
 	int index = 0;
@@ -212,40 +216,31 @@ void drawTriangle()
 			TriangleFactor factor = inTriangle(x + 0.5, y + 0.5, tri);
 			if (factor.alpha >= 0 && factor.beta >= 0 && factor.gama >= 0)
 			{
-				*(&pixel[index++]) = 255 * factor.alpha;
-				*(&pixel[index++]) = 255 * factor.beta;
-				*(&pixel[index++]) = 255 * factor.gama;
+				Color A = { 255,0,0,0 };
+				Color B = { 255,255,255,255 };
+				Color C = { 0,0,0,0 };
+				//R/G/B/A = alpha*A + beta*B + gama*C
+				pixel[index++] = A.r * factor.alpha + B.r * factor.beta + C.r * factor.gama;
+				pixel[index++] = A.g * factor.alpha + B.g * factor.beta + C.g * factor.gama;
+				pixel[index++] = A.b * factor.alpha + B.b * factor.beta + C.b * factor.gama;
 			}
 			else
 			{
-				*(&pixel[index++]) = 100;
-				*(&pixel[index++]) = 100;
-				*(&pixel[index++]) = 100;
+				pixel[index++] = 100;
+				pixel[index++] = 100;
+				pixel[index++] = 100;
 			}
 			/*	if ((tri.A.x == x && tri.A.y == y) || (tri.B.x == x && tri.B.y == y) || (tri.C.x == x && tri.C.y == y))
 				{
 					*(&pixel[index++]) = 255;
 					*(&pixel[index++]) = 255;
 					*(&pixel[index++]) = 255;
-				}*/
+			}*/
 		}
 	}
 	SDLDraw(pixel, 200, 150, image.sizeofRow, SDL_PIXELFORMAT_RGB24);
-	//SDL_Window* win = SDL_CreateWindow("window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, image.width, image.height, SDL_WINDOW_OPENGL);
-	//SDL_Renderer* renderer = SDL_CreateRenderer(win, -1, 0);
-	//SDL_Texture* tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, image.width, image.height);
-	//SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	//SDL_RenderClear(renderer);
-	//SDL_UpdateTexture(tex, NULL, pixel, image.sizeofRow);
-	//SDL_RenderCopy(renderer, tex, NULL, NULL);
-	//SDL_RenderPresent(renderer);
-	//SDL_Delay(200000);
-	//// 销毁纹理、渲染器和窗口
-	//SDL_DestroyTexture(tex);
-	//SDL_DestroyRenderer(renderer);
-	//SDL_DestroyWindow(win);
-}
 
+}
 
 ImageData readUVImage(const char* filename)
 {
@@ -342,8 +337,8 @@ void drawUVTriangle()
 
 	//UV图片
 	ImageData myImage = readUVImage("3.png");
-	ImageData backImage = readUVImage("4.png");
-	ImageData bitImage = readUVImage("8.png");
+	ImageData backImage = readUVImage("8.png");
+	ImageData bitImage = readUVImage("4.png");
 	printf("backImage.sizeofRow = %d \n", backImage.sizeofRow);
 
 	Point2 uv = { 1,1 };
@@ -360,14 +355,10 @@ void drawUVTriangle()
 			factor = inTriangle(x + 0.5, y + 0.5, tri);
 			float trans = 1.0f;
 			//float trans = ((float)(bitImage.pixel[image.sizeofRow * y + x * image.chanel + 3])) / (float)255;
-			//printf("a = %f \t", ((float)230/ (float)255));
-			//printf("a = %f \t", ((float)(bitImage.pixel[image.sizeofRow * y + x * image.chanel + 3])) / (float)255);
-			pixel[image.sizeofRow * y + x * image.chanel + 0] = 100 * (1 - trans) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 0] * trans;
-			pixel[image.sizeofRow * y + x * image.chanel + 1] = 100 * (1 - trans) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 1] * trans;
-			pixel[image.sizeofRow * y + x * image.chanel + 2] = 100 * (1 - trans) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 2] * trans;
-			pixel[image.sizeofRow * y + x * image.chanel + 3] = 100 * (1 - trans) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 3] * trans;
-
-
+			pixel[image.sizeofRow * y + x * image.chanel + 0] = 100 * (1 - trans) + bitImage.pixel[image.sizeofRow * y + x * image.chanel + 0] * trans;
+			pixel[image.sizeofRow * y + x * image.chanel + 1] = 100 * (1 - trans) + bitImage.pixel[image.sizeofRow * y + x * image.chanel + 1] * trans;
+			pixel[image.sizeofRow * y + x * image.chanel + 2] = 100 * (1 - trans) + bitImage.pixel[image.sizeofRow * y + x * image.chanel + 2] * trans;
+			pixel[image.sizeofRow * y + x * image.chanel + 3] = 100 * (1 - trans) + bitImage.pixel[image.sizeofRow * y + x * image.chanel + 3] * trans;
 
 
 			if ((factor.gama >= 0) && (factor.beta >= 0) && (factor.alpha >= 0))
@@ -375,13 +366,13 @@ void drawUVTriangle()
 				uv.x = factor.alpha * uva.x + factor.beta * uvb.x + factor.gama * uvc.x;
 				uv.y = factor.alpha * uva.y + factor.beta * uvb.y + factor.gama * uvc.y;
 				Color color = getUVSample(uv, myImage);
-				float transparency = 1.0f;
-
-				//左上角
-				pixel[image.sizeofRow * y + x * image.chanel + 0] = color.r * transparency /*+ pixel[image.sizeofRow * y + x * image.chanel + 0] * (1 - transparency)*/ + backImage.pixel[image.sizeofRow * y + x * image.chanel + 0] * (1 - transparency);
-				pixel[image.sizeofRow * y + x * image.chanel + 1] = color.g * transparency /*+ pixel[image.sizeofRow * y + x * image.chanel + 1] * (1 - transparency)*/ + backImage.pixel[image.sizeofRow * y + x * image.chanel + 1] * (1 - transparency);
-				pixel[image.sizeofRow * y + x * image.chanel + 2] = color.b * transparency /*+ pixel[image.sizeofRow * y + x * image.chanel + 2] * (1 - transparency)*/ + backImage.pixel[image.sizeofRow * y + x * image.chanel + 2] * (1 - transparency);
-				pixel[image.sizeofRow * y + x * image.chanel + 3] = color.a * transparency /*+ pixel[image.sizeofRow * y + x * image.chanel + 3] * (1 - transparency)*/ + backImage.pixel[image.sizeofRow * y + x * image.chanel + 3] * (1 - transparency);
+				float transparency = ((float)(backImage.pixel[image.sizeofRow * y + x * image.chanel + 3])) / (float)255;
+				//printf("transparency = %f \t", transparency);
+				//左上角  画UV三角形
+				pixel[image.sizeofRow * y + x * image.chanel + 0] = color.r /** (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 0] * transparency*/;
+				pixel[image.sizeofRow * y + x * image.chanel + 1] = color.g /** (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 1] * transparency*/;
+				pixel[image.sizeofRow * y + x * image.chanel + 2] = color.b /** (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 2] * transparency*/;
+				pixel[image.sizeofRow * y + x * image.chanel + 3] = color.a /** (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 3] * transparency*/;
 
 				//右下角
 				/**(&pixel[image.sizeofRow * (image.height - y) + (image.width - x) * image.chanel + 0]) = color.r;
@@ -404,75 +395,107 @@ void drawUVTriangle()
 
 			}
 
-			/*float bitTran = 0.5f;
-			pixel[image.sizeofRow * y + x * image.chanel + 0] = bitImage.pixel[image.sizeofRow * y + x * image.chanel + 0] * bitTran + pixel[image.sizeofRow * y + x * image.chanel + 0] * (1 - bitTran);
-			pixel[image.sizeofRow * y + x * image.chanel + 1] = bitImage.pixel[image.sizeofRow * y + x * image.chanel + 1] * bitTran + pixel[image.sizeofRow * y + x * image.chanel + 1] * (1 - bitTran);
-			pixel[image.sizeofRow * y + x * image.chanel + 2] = bitImage.pixel[image.sizeofRow * y + x * image.chanel + 2] * bitTran + pixel[image.sizeofRow * y + x * image.chanel + 2] * (1 - bitTran);*/
+			//叠第三张图
+			float transparency = ((float)(backImage.pixel[image.sizeofRow * y + x * image.chanel + 3])) / (float)255;
+			pixel[image.sizeofRow * y + x * image.chanel + 0] = pixel[image.sizeofRow * y + x * image.chanel + 0] * (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 0] * transparency;
+			pixel[image.sizeofRow * y + x * image.chanel + 1] = pixel[image.sizeofRow * y + x * image.chanel + 1] * (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 1] * transparency;
+			pixel[image.sizeofRow * y + x * image.chanel + 2] = pixel[image.sizeofRow * y + x * image.chanel + 2] * (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 2] * transparency;
+			pixel[image.sizeofRow * y + x * image.chanel + 3] = pixel[image.sizeofRow * y + x * image.chanel + 3] * (1 - transparency) + backImage.pixel[image.sizeofRow * y + x * image.chanel + 3] * transparency;
 
 		}
 	}
 
+	SDLDraw(pixel, image.width, image.height, image.sizeofRow, SDL_PIXELFORMAT_RGBA32);
+}
 
-	//for (size_t y = 0; y < image.height; y++)
-	//{
-	//	for (size_t x = 0; x < image.width; ++x)
-	//	{
-	//		TriangleFactor factor = { 0 };
-	//		factor = inTriangle(x + 0.5, y + 0.5, tri);
+void drawUVTri()
+{
+	ImageData image = { 0 };
+	image.width = 680;
+	image.height = 460;
+	image.chanel = 4;
+	image.sizeofRow = image.width * image.chanel;
 
-	//		if ((factor.gama >= 0) && (factor.beta >= 0) && (factor.alpha >= 0))
-	//		{
-	//			/*uint8_t* rp = pixel + (image.sizeofRow * y + x * image.chanel + 0);
-	//			uint8_t* gp = pixel + (image.sizeofRow * y + x * image.chanel + 1);
-	//			uint8_t* bp = pixel + (image.sizeofRow * y + x * image.chanel + 2);*/
+	Point2 pA = { 10 ,10 };
+	Point2 pB = { 400 ,40 };
+	Point2 pC = { 10 ,400 };
 
-	//			//*(&pixel[index++]) = 255 * factor.alpha;
-	//			//*(&pixel[index++]) = 255 * factor.beta;
-	//			//*(&pixel[index++]) = 255 * factor.gama;
+	Triangle tri = { pA,pB,pC };
+	uint8_t* pixel = (uint8_t*)malloc(image.sizeofRow * image.height);
 
-	//			uv.x = factor.alpha * uva.x + factor.beta * uvb.x + factor.gama * uvc.x;
-	//			uv.y = factor.alpha * uva.y + factor.beta * uvb.y + factor.gama * uvc.y;
 
-	//			//Color color = getUVSample(uv, myImage);
-	//			//*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = factor.alpha * 255 + factor.beta * 128 + factor.gama * 0;//0,0,0
-	//			//*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = factor.alpha * 255 + factor.beta * 128 + factor.gama * 0;//255,255,255
-	//			//*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = factor.alpha * 255 + factor.beta * 128 + factor.gama * 0;
+	//UV图片
+	ImageData myImage = readUVImage("3.png");
+	ImageData backImage = readUVImage("8.png");
+	ImageData bitImage = readUVImage("4.png");
 
-	//			//*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = (uint8_t)(uv.x * 255);//255,0,0
-	//			//*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = (uint8_t)(uv.y * 255);//0,255,0
-	//			//*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = 0;
+	Point2 uv = { 1,1 };
+	Point2 uva = { 0,1 };
+	Point2 uvb = { 1,1 };
+	Point2 uvc = { 0,0 };
 
-	//			Color color = getUVSample(uv, myImage);
-	//			*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = color.r * 0.5;
-	//			*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = color.g * 0.5;
-	//			*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = color.b * 0.5;
-	//			*(&pixel[image.sizeofRow * y + x * image.chanel + 3]) = color.a;
-	//		}
-	//		else
-	//		{
-	//			/**(&pixel[index++]) = 100;
-	//			*(&pixel[index++]) = 100;
-	//			*(&pixel[index++]) = 100;*/
-	//			/**(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = 100;
-	//			*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = 100;
-	//			*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = 100;*/
-	//		}
-	//		/*if ((tri.A.x == x && tri.A.y == y) || (tri.B.x == x && tri.B.y == y) || (tri.C.x == x && tri.C.y == y))
-	//		{
-	//			*(&pixel[index++]) = 255;
-	//			*(&pixel[index++]) = 0;
-	//			*(&pixel[index++]) = 0;
-	//		}*/
-	//	}
-	//}
+	for (size_t y = 0; y < image.height; y++)
+	{
+		for (size_t x = 0; x < image.width; ++x)
+		{
+			TriangleFactor factor = { 0 };
+			factor = inTriangle(x + 0.5, y + 0.5, tri);
+
+			if ((factor.gama >= 0) && (factor.beta >= 0) && (factor.alpha >= 0))
+			{
+				/*uint8_t* rp = pixel + (image.sizeofRow * y + x * image.chanel + 0);
+				uint8_t* gp = pixel + (image.sizeofRow * y + x * image.chanel + 1);
+				uint8_t* bp = pixel + (image.sizeofRow * y + x * image.chanel + 2);*/
+
+				//*(&pixel[index++]) = 255 * factor.alpha;
+				//*(&pixel[index++]) = 255 * factor.beta;
+				//*(&pixel[index++]) = 255 * factor.gama;
+
+				uv.x = factor.alpha * uva.x + factor.beta * uvb.x + factor.gama * uvc.x;
+				uv.y = factor.alpha * uva.y + factor.beta * uvb.y + factor.gama * uvc.y;
+
+				//Color color = getUVSample(uv, myImage);
+				//*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = factor.alpha * 255 + factor.beta * 128 + factor.gama * 0;//0,0,0
+				//*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = factor.alpha * 255 + factor.beta * 128 + factor.gama * 0;//255,255,255
+				//*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = factor.alpha * 255 + factor.beta * 128 + factor.gama * 0;
+
+				//*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = (uint8_t)(uv.x * 255);//255,0,0
+				//*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = (uint8_t)(uv.y * 255);//0,255,0
+				//*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = 0;
+
+				Color color = getUVSample(uv, myImage);
+				*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = color.r * 0.5;
+				*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = color.g * 0.5;
+				*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = color.b * 0.5;
+				*(&pixel[image.sizeofRow * y + x * image.chanel + 3]) = color.a;
+			}
+			else
+			{
+				/**(&pixel[index++]) = 100;
+				*(&pixel[index++]) = 100;
+				*(&pixel[index++]) = 100;*/
+				/**(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = 100;
+				*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = 100;
+				*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = 100;*/
+			}
+			/*if ((tri.A.x == x && tri.A.y == y) || (tri.B.x == x && tri.B.y == y) || (tri.C.x == x && tri.C.y == y))
+			{
+				*(&pixel[index++]) = 255;
+				*(&pixel[index++]) = 0;
+				*(&pixel[index++]) = 0;
+			}*/
+		}
+	}
 
 	SDLDraw(pixel, image.width, image.height, image.sizeofRow, SDL_PIXELFORMAT_RGBA32);
 }
+
 
 int main()
 {
 	//readPNG("9.png", SDL_PIXELFORMAT_RGBA32);
 	//drawTriangle();
+	//drawUVTri();
 	drawUVTriangle();
 	std::cout << "Hello World!\n";
 	return 0;
