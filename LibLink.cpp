@@ -337,12 +337,12 @@ void drawUVTriangle()
 
 	//UV图片
 	ImageData myImage = readUVImage("3.png");
-	ImageData backImage = readUVImage("8.png");
+	ImageData backImage = readUVImage("10.png");
 	ImageData bitImage = readUVImage("4.png");
 	printf("backImage.sizeofRow = %d \n", backImage.sizeofRow);
 
 	Point2 uv = { 1,1 };
-	Point2 uva = { 0,1 };
+	Point2 uva = { 0,1 }; 
 	Point2 uvb = { 1,1 };
 	Point2 uvc = { 0,0 };
 

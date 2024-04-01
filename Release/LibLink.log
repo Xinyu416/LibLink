@@ -24,7 +24,7 @@ C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(467,69): warning C4244: “=”:
 C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(468,69): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
 C:\Users\Xinyu\source\repos\LibLink\LibLink.cpp(469,69): warning C4244: “=”: 从“double”转换到“uint8_t”，可能丢失数据
   正在生成代码
-  9 of 20 functions (45.0%) were compiled, the rest were copied from previous compilation.
+  0 of 20 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
