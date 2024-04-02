@@ -306,15 +306,15 @@ ImageData readUVImage(const char* filename)
 Color getUVSample(Point2 uv, ImageData myImage)
 {
 	Color color = { 0 };
-	int posx = (int)(myImage.width * (uv.x*0.5));
-	int posy = (int)(myImage.height * (1 - uv.y*0.5));
+	int posx = (int)(myImage.width * (uv.x /** 0.5*/));
+	int posy = (int)(myImage.height * (1 - uv.y /** 0.5*/));
 
-	int index = posx * myImage.chanel + posy * myImage.sizeofRow;
+	int index = (posx + 0) * myImage.chanel + (posy + 0) * myImage.sizeofRow;
 
-	color.r = myImage.pixel[index + 0];
-	color.g = myImage.pixel[index + 1];
-	color.b = myImage.pixel[index + 2];
-	color.a = myImage.pixel[index + 3];
+	color.r = myImage.pixel[index + 1200 + 0];
+	color.g = myImage.pixel[index + 1200 + 1];
+	color.b = myImage.pixel[index + 1200 + 2];
+	color.a = myImage.pixel[index + 1200 + 3];
 
 	return color;
 }
