@@ -306,8 +306,8 @@ ImageData readUVImage(const char* filename)
 Color getUVSample(Point2 uv, ImageData myImage)
 {
 	Color color = { 0 };
-	int posx = (int)(myImage.width * (uv.x));
-	int posy = (int)(myImage.height * (1 - uv.y));
+	int posx = (int)(myImage.width * (uv.x*0.5));
+	int posy = (int)(myImage.height * (1 - uv.y*0.5));
 
 	int index = posx * myImage.chanel + posy * myImage.sizeofRow;
 
@@ -342,7 +342,7 @@ void drawUVTriangle()
 	printf("backImage.sizeofRow = %d \n", backImage.sizeofRow);
 
 	Point2 uv = { 1,1 };
-	Point2 uva = { 0,1 }; 
+	Point2 uva = { 0,1 };
 	Point2 uvb = { 1,1 };
 	Point2 uvc = { 0,0 };
 
@@ -464,10 +464,10 @@ void drawUVTri()
 				//*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = 0;
 
 				Color color = getUVSample(uv, myImage);
-				*(&pixel[image.sizeofRow * y + x * image.chanel + 0]) = color.r * 0.5;
-				*(&pixel[image.sizeofRow * y + x * image.chanel + 1]) = color.g * 0.5;
-				*(&pixel[image.sizeofRow * y + x * image.chanel + 2]) = color.b * 0.5;
-				*(&pixel[image.sizeofRow * y + x * image.chanel + 3]) = color.a;
+				pixel[image.sizeofRow * y + x * image.chanel + 0] = color.r;
+				pixel[image.sizeofRow * y + x * image.chanel + 1] = color.g;
+				pixel[image.sizeofRow * y + x * image.chanel + 2] = color.b;
+				pixel[image.sizeofRow * y + x * image.chanel + 3] = color.a;
 			}
 			else
 			{
@@ -495,8 +495,8 @@ int main()
 {
 	//readPNG("9.png", SDL_PIXELFORMAT_RGBA32);
 	//drawTriangle();
-	//drawUVTri();
-	drawUVTriangle();
+	drawUVTri();
+	//drawUVTriangle();
 	std::cout << "Hello World!\n";
 	return 0;
 }
