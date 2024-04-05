@@ -1,40 +1,7 @@
 ﻿// LibLink.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 #define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include "SDL.h"
-#include "png.h"
-
-
-struct Color
-{
-	uint8_t r, g, b, a;
-};
-
-struct ImageData
-{
-	size_t width;
-	size_t height;
-	size_t chanel;
-	size_t sizeofRow;
-	uint8_t* pixel;
-};
-
-struct Point2
-{
-	float x;
-	float y;
-};
-
-struct Triangle
-{
-	Point2 A, B, C;
-};
-
-struct TriangleFactor
-{
-	float alpha, beta, gama;
-};
+#include "LibLink.h"
 
 
 void png_error_callback(png_structp pngPtr, png_const_charp error)
@@ -58,7 +25,7 @@ void SDLDraw(const void* pixel, int w, int h, int _sizeOfRow, Uint32 depth)
 	SDL_UpdateTexture(tex, NULL, pixel, _sizeOfRow);
 	SDL_RenderCopy(renderer, tex, NULL, NULL);
 	SDL_RenderPresent(renderer);
-	SDL_Delay(20000);
+	SDL_Delay(1000);
 	// 销毁纹理、渲染器和窗口
 	SDL_DestroyTexture(tex);
 	SDL_DestroyRenderer(renderer);
@@ -298,8 +265,7 @@ ImageData readUVImage(const char* filename)
 	myImage.sizeofRow = sizeOfRow;
 	myImage.pixel = pixel;
 
-	printf("myImage.width = %d ,myImage.height = %d ,myImage.chanel = %d ,myImage.sizeofRow = %d\n", myImage.width, myImage.height, myImage.chanel, myImage.sizeofRow);
-
+	//printf("myImage.width = %d ,myImage.height = %d ,myImage.chanel = %d ,myImage.sizeofRow = %d\n", myImage.width, myImage.height, myImage.chanel, myImage.sizeofRow);
 	return myImage;
 }
 
@@ -311,13 +277,36 @@ Color getUVSample(Point2 uv, ImageData myImage)
 
 	int index = (posx + 0) * myImage.chanel + (posy + 0) * myImage.sizeofRow;
 
-	color.r = myImage.pixel[index + 1200 + 0];
-	color.g = myImage.pixel[index + 1200 + 1];
-	color.b = myImage.pixel[index + 1200 + 2];
-	color.a = myImage.pixel[index + 1200 + 3];
+	color.r = myImage.pixel[index + 0];
+	color.g = myImage.pixel[index + 1];
+	color.b = myImage.pixel[index + 2];
+	color.a = myImage.pixel[index + 3];
 
 	return color;
 }
+
+Color getUVRotateSample(Point2 uv, ImageData myImage)
+{
+	Color color = { 0 };
+
+	if ((uv.x < 0) || (uv.x > 1) || (uv.y < 0) || (uv.y > 1))
+	{
+		return color = { 255,255,255,255 };
+	}
+
+	int posx = (int)(myImage.width * (uv.x /** 0.5*/));
+	int posy = (int)(myImage.height * (1 - uv.y /** 0.5*/));
+
+	int index = (posx + 0) * myImage.chanel + (posy + 0) * myImage.sizeofRow;
+
+	color.r = myImage.pixel[index + 0];
+	color.g = myImage.pixel[index + 1];
+	color.b = myImage.pixel[index + 2];
+	color.a = myImage.pixel[index + 3];
+
+	return color;
+}
+
 
 void drawUVTriangle()
 {
@@ -491,12 +480,501 @@ void drawUVTri()
 }
 
 
+Point2 setMoveOrigin(Point2 pA, Point2 pB, Point2 pC)
+{
+	Point2 O;
+	O.x = (pA.x + pB.x) * 0.5f;
+	O.y = (pA.y + pC.y) * 0.5f;
+	//O.x = pC.x+1;
+	//O.y = pC.y+1;
+	//printf("O = (%f,%f)\n", O.x, O.y);
+	return O;
+}
+
+
+Triangle rotateTri(float angle, Point2 pA, Point2 pB, Point2 pC)
+{
+	//三个点当前角度
+	const double PI = acos(-1);
+	//printf("sin(30) = %f \n", sin(3.14 * 30 / 180.0));
+	printf("PI = %f \n", M_PI);
+	//R 2 D 
+	printf("atan(1) = %f\n", atan(1) * R2D);
+
+	float radianA, radianB, radianC;
+	radianA = atan(pA.y / pA.x);
+	radianB = atan(pB.y / pB.x);
+	radianC = atan(pC.y / pC.x);
+
+	//三个点的半径 勾股定理
+	float radiusA, radiusB, radiusC;
+	radiusA = sqrt((pA.x * pA.x) + (pA.y * pA.y));
+	radiusB = sqrt((pB.x * pB.x) + (pB.y * pB.y));
+	radiusC = sqrt((pC.x * pC.x) + (pC.y * pC.y));
+	printf("A 半径 = %f \n", radiusA);
+	printf("B 半径 = %f \n", radiusB);
+	printf("C 半径 = %f \n", radiusC);
+
+	//旋转一定角度后 新的三个点位置
+	float radian = angle * D2R;
+	float new_pA_x, new_pA_y;
+	float new_pB_x, new_pB_y;
+	float new_pC_x, new_pC_y;
+
+	//y = sin() x = cos()
+	new_pA_y = sin(radianA + radian) * radiusA;
+	new_pA_x = cos(radianA + radian) * radiusA;
+
+	new_pB_y = sin(radianB + radian) * radiusB;
+	new_pB_x = cos(radianB + radian) * radiusB;
+
+	new_pC_y = sin(radianC + radian) * radiusC;
+	new_pC_x = cos(radianC + radian) * radiusC;
+
+	pA.x = new_pA_x;
+	pA.y = new_pA_y;
+
+	pB.x = new_pB_x;
+	pB.y = new_pB_y;
+
+	pC.x = new_pC_x;
+	pC.y = new_pC_y;
+
+	Triangle tri = { pA,pB,pC };
+	return tri;
+}
+
+float ConverAtan(float x, float y)
+{
+	float radian;
+	if (x < 0)
+	{
+		radian = atan(y / x) + M_PI;
+	}
+	else if (y < 0)
+	{
+		radian = atan(y / x) + 2 * M_PI;
+	}
+	else
+	{
+		radian = atan(y / x);
+	}
+
+	return radian;
+}
+
+
+float ConverAtanByMath(float x, float y)
+{
+	//不用逻辑运算 只用数学运算
+	float radian;
+	if (x < 0)
+	{
+		radian = atan(y / x) + M_PI;
+	}
+	else if (y < 0)
+	{
+		radian = atan(y / x) + 2 * M_PI;
+	}
+	else
+	{
+		radian = atan(y / x);
+	}
+
+	return radian;
+}
+
+Triangle rotateTriBySpecialPoint(float angle, Point2 pA, Point2 pB, Point2 pC)
+{
+	Point2 O = setMoveOrigin(pA, pB, pC);
+
+	//计算相对于 O 点的相对坐标
+	Point2 new_pA, new_pB, new_pC;
+	new_pA = Point2SubtractCovert(O, pA);
+	new_pB = Point2SubtractCovert(O, pB);
+	new_pC = Point2SubtractCovert(O, pC);
+	printf("--------------计算相对于 O 点的相对坐标--------------\n");
+	printf("\n new_pA = ( %f , %f ) \n new_pB = ( %f , %f )  \n new_pC =  ( %f , %f )  \n", new_pA.x, new_pA.y, new_pB.x, new_pB.y, new_pC.x, new_pC.y);
+
+	//各个角度的弧度表示
+	float radianA, radianB, radianC;
+	//radianA = atan(new_pA.y / new_pA.x);
+	//radianB = atan(new_pB.y / new_pB.x);
+	//radianC = atan(new_pC.y / new_pC.x);
+
+	radianA = ConverAtan(new_pA.x, new_pA.y);
+	radianB = ConverAtan(new_pB.x, new_pB.y);
+	radianC = ConverAtan(new_pC.x, new_pC.y);
+
+	float degreeA, degreeB, degreeC;
+	degreeA = radianA * R2D;
+	degreeB = radianB * R2D;
+	degreeC = radianC * R2D;
+	printf("--------------计算点相对于旋转基准点的角度--------------\n");
+	printf("degreeA = %f \n ", degreeA);
+	printf("degreeB = %f \n ", degreeB);
+	printf("degreeC = %f \n ", degreeC);
+
+	//三个点的半径 勾股定理
+	float radiusA, radiusB, radiusC;
+	radiusA = sqrt((new_pA.x * new_pA.x) + (new_pA.y * new_pA.y));
+	radiusB = sqrt((new_pB.x * new_pB.x) + (new_pB.y * new_pB.y));
+	radiusC = sqrt((new_pC.x * new_pC.x) + (new_pC.y * new_pC.y));
+	printf("--------------计算新的相对于旋转基准点的半径--------------\n");
+	printf("A 半径 = %f \n", radiusA);
+	printf("B 半径 = %f \n", radiusB);
+	printf("C 半径 = %f \n", radiusC);
+
+	//旋转一定角度后 新的三个点位置
+	float radian = angle * D2R;
+	float new_pA_x, new_pA_y;
+	float new_pB_x, new_pB_y;
+	float new_pC_x, new_pC_y;
+
+	//计算旋转对应角度后的坐标位置 后需要加上偏移量！
+	//y = sin() x = cos()
+	new_pA_y = sin(radianA + radian) * radiusA + O.y;
+	new_pA_x = cos(radianA + radian) * radiusA + O.x;
+
+	new_pB_y = sin(radianB + radian) * radiusB + O.y;
+	new_pB_x = cos(radianB + radian) * radiusB + O.x;
+
+	new_pC_y = sin(radianC + radian) * radiusC + O.y;
+	new_pC_x = cos(radianC + radian) * radiusC + O.x;
+
+	pA.x = new_pA_x;
+	pA.y = new_pA_y;
+
+	pB.x = new_pB_x;
+	pB.y = new_pB_y;
+
+	pC.x = new_pC_x;
+	pC.y = new_pC_y;
+
+	Triangle tri = { pA,pB,pC };
+	printf("新三角形位置 :  \nA (%f,%f) ,  B (%f,%f) ,  C (%f,%f)\n ", pA.x, pA.y, pB.x, pB.y, pC.x, pC.y);
+	return tri;
+}
+
+
+
+void drawRotateTri()
+{
+	ImageData image = { 0 };
+	image.width = 680;
+	image.height = 460;
+	image.chanel = 4;
+	image.sizeofRow = image.width * image.chanel;
+
+	Point2 pA = { 10 ,10 };
+	Point2 pB = { 400 ,40 };
+	Point2 pC = { 10 ,400 };
+
+	Point2 O = setMoveOrigin(pA, pB, pC);
+
+	//Triangle tri = rotateTri(0.f, pA, pB, pC);
+	Triangle tri = rotateTriBySpecialPoint(30.f, pA, pB, pC);
+
+	uint8_t* pixel = (uint8_t*)malloc(image.sizeofRow * image.height);
+
+
+	//UV图片
+	ImageData myImage = readUVImage("3.png");
+
+	Point2 uv = { 1,1 };
+	Point2 uva = { 0,1 };
+	Point2 uvb = { 1,1 };
+	Point2 uvc = { 0,0 };
+
+
+
+	for (size_t y = 0; y < image.height; y++)
+	{
+		for (size_t x = 0; x < image.width; ++x)
+		{
+			TriangleFactor factor = { 0 };
+			factor = inTriangle(x + 0.5, y + 0.5, tri);
+
+			if ((factor.gama >= 0) && (factor.beta >= 0) && (factor.alpha >= 0))
+			{
+				uv.x = factor.alpha * uva.x + factor.beta * uvb.x + factor.gama * uvc.x;
+				uv.y = factor.alpha * uva.y + factor.beta * uvb.y + factor.gama * uvc.y;
+
+
+				Color color = getUVSample(uv, myImage);
+				pixel[image.sizeofRow * y + x * image.chanel + 0] = color.r;
+				pixel[image.sizeofRow * y + x * image.chanel + 1] = color.g;
+				pixel[image.sizeofRow * y + x * image.chanel + 2] = color.b;
+				pixel[image.sizeofRow * y + x * image.chanel + 3] = color.a;
+			}
+			if (y == O.y || x == O.x)
+			{
+				//画出中心点
+				pixel[image.sizeofRow * y + x * image.chanel + 0] = 255;
+				pixel[image.sizeofRow * y + x * image.chanel + 1] = 255;
+				pixel[image.sizeofRow * y + x * image.chanel + 2] = 255;
+				pixel[image.sizeofRow * y + x * image.chanel + 3] = 255;
+			}
+		}
+	}
+
+	SDLDraw(pixel, image.width, image.height, image.sizeofRow, SDL_PIXELFORMAT_RGBA32);
+}
+
+float getPointRadius(Point2 O, Point2 p)
+{
+	//计算相对于 O 点的相对坐标
+	Point2 new_p;
+	new_p = Point2SubtractCovert(O, p);
+	//点的弧度
+	float  radian = ConverAtan(new_p.x, new_p.y);
+	//点的角度
+	float degree = radian * R2D;
+	//点的半径
+	float radius = sqrt((new_p.x * new_p.x) + (new_p.y * new_p.y));
+	//printf("radius = %f \n", radius);
+	return radius;
+}
+
+float getPointAngle(Point2 O, Point2 p)
+{
+	//计算相对于 O 点的相对坐标
+	Point2 new_p;
+	new_p = Point2SubtractCovert(O, p);
+	//点的弧度
+	float  radian = ConverAtan(new_p.x, new_p.y);
+	//点的角度
+	float degree = radian * R2D;
+	//点的半径
+	float radius = sqrt((new_p.x * new_p.x) + (new_p.y * new_p.y));
+	//printf("radius = %f \n", radius);
+	return degree;
+}
+
+
+//极坐标显示半径和角度
+void drawRA()
+{
+
+	ImageData image = { 0 };
+	image.width = 680;
+	image.height = 460;
+	image.chanel = 4;
+	image.sizeofRow = image.width * image.chanel;
+
+	Point2 pA = { 10 ,10 };
+	Point2 pB = { 400 ,40 };
+	Point2 pC = { 10 ,400 };
+	Triangle tri = { pA, pB, pC };
+
+	uint8_t* pixel = (uint8_t*)malloc(image.sizeofRow * image.height);
+	Point2 O = setMoveOrigin(pA, pB, pC);
+
+	Point2 uv = { 1,1 };
+	Point2 uva = { 0,1 };
+	Point2 uvb = { 1,1 };
+	Point2 uvc = { 0,0 };
+
+	//UV图片
+	ImageData myImage = readUVImage("3.png");
+
+	for (size_t y = 0; y < image.height; y++)
+	{
+		for (size_t x = 0; x < image.width; ++x)
+		{
+			TriangleFactor factor = { 0 };
+			factor = inTriangle(x + 0.5, y + 0.5, tri);
+
+			if ((factor.gama >= 0) && (factor.beta >= 0) && (factor.alpha >= 0))
+			{
+
+				Point2 p;
+				p.x = x;
+				p.y = y;
+
+				float radius = getPointRadius(O, p) / (float)image.height;
+				float angle = getPointAngle(O, p) / 360;
+				//printf("\nangle = %f\n",angle);
+
+				//R/G/B/A = alpha*A + beta*B + gama*C
+
+				//uv.x = factor.alpha * uva.x + factor.beta * uvb.x + factor.gama * uvc.x;
+				//uv.y = factor.alpha * uva.y + factor.beta * uvb.y + factor.gama * uvc.y;
+				uv.x = radius;
+				uv.y = angle;
+
+				Color color = getUVSample(uv, myImage);
+				pixel[image.sizeofRow * y + x * image.chanel + 0] = color.r;
+				pixel[image.sizeofRow * y + x * image.chanel + 1] = color.g;
+				pixel[image.sizeofRow * y + x * image.chanel + 2] = color.b;
+				pixel[image.sizeofRow * y + x * image.chanel + 3] = color.a;
+
+
+			}
+
+		}
+	}
+
+	SDLDraw(pixel, image.width, image.height, image.sizeofRow, SDL_PIXELFORMAT_RGBA32);
+}
+
+Triangle rotateUVPoint(float angle, Point2 pA, Point2 pB, Point2 pC)
+{
+	////获取当前的uv坐标
+
+	////旋转当前的uv
+
+	////获取旋转对应角度后的uv坐标
+	Point2 O;
+	O.x = (pA.x + pB.x) * 0.5f;
+	O.y = (pA.y + pC.y) * 0.5f;
+	//Point2 O = setMoveOrigin(pA, pB, pC);
+	//计算相对于 O 点的相对坐标
+	Point2 new_pA, new_pB, new_pC;
+	new_pA = Point2SubtractCovert(O, pA);
+	new_pB = Point2SubtractCovert(O, pB);
+	new_pC = Point2SubtractCovert(O, pC);
+	//各个角度的弧度表示
+	float radianA, radianB, radianC;
+	//radianA = atan(new_pA.y / new_pA.x);
+	//radianB = atan(new_pB.y / new_pB.x);
+	//radianC = atan(new_pC.y / new_pC.x);
+
+	radianA = ConverAtan(new_pA.x, new_pA.y);
+	radianB = ConverAtan(new_pB.x, new_pB.y);
+	radianC = ConverAtan(new_pC.x, new_pC.y);
+
+	float degreeA, degreeB, degreeC;
+	degreeA = radianA * R2D;
+	degreeB = radianB * R2D;
+	degreeC = radianC * R2D;
+
+	//三个点的半径 勾股定理
+	float radiusA, radiusB, radiusC;
+	radiusA = sqrt((new_pA.x * new_pA.x) + (new_pA.y * new_pA.y));
+	radiusB = sqrt((new_pB.x * new_pB.x) + (new_pB.y * new_pB.y));
+	radiusC = sqrt((new_pC.x * new_pC.x) + (new_pC.y * new_pC.y));
+
+	//旋转一定角度后 新的三个点位置
+	float radian = angle * D2R;
+	float new_pA_x, new_pA_y;
+	float new_pB_x, new_pB_y;
+	float new_pC_x, new_pC_y;
+
+	//计算旋转对应角度后的坐标位置 后需要加上偏移量！
+	//y = sin() x = cos()
+	new_pA_y = sin(radianA + radian) * radiusA + O.y;
+	new_pA_x = cos(radianA + radian) * radiusA + O.x;
+
+	new_pB_y = sin(radianB + radian) * radiusB + O.y;
+	new_pB_x = cos(radianB + radian) * radiusB + O.x;
+
+	new_pC_y = sin(radianC + radian) * radiusC + O.y;
+	new_pC_x = cos(radianC + radian) * radiusC + O.x;
+
+	pA.x = new_pA_x;
+	pA.y = new_pA_y;
+
+	pB.x = new_pB_x;
+	pB.y = new_pB_y;
+
+	pC.x = new_pC_x;
+	pC.y = new_pC_y;
+
+	Triangle tri = { pA,pB,pC };
+	return tri;
+}
+
+
+//旋转UV
+void rotateUVbyAngle(float angle)
+{
+	ImageData image = { 0 };
+	image.width = 680;
+	image.height = 460;
+	image.chanel = 4;
+	image.sizeofRow = image.width * image.chanel;
+
+	Point2 pA = { 10 ,10 };
+	Point2 pB = { 400 ,40 };
+	Point2 pC = { 10 ,400 };
+	Triangle tri = { pA, pB, pC };
+
+	uint8_t* pixel = (uint8_t*)malloc(image.sizeofRow * image.height);
+
+	//设置旋转原点
+	Point2 O = setMoveOrigin(pA, pB, pC);
+
+	Point2 uv = { 1,1 };
+	Point2 uva = { 0,1 };
+	Point2 uvb = { 1,1 };
+	Point2 uvc = { 0,0 };
+
+	//旋转UV
+	Triangle newuvVec = rotateUVPoint(angle, uva, uvb, uvc);
+
+	uva = newuvVec.A;
+	uvb = newuvVec.B;
+	uvc = newuvVec.C;
+
+	//UV图片
+	ImageData myImage = readUVImage("3.png");
+
+	for (size_t y = 0; y < image.height; y++)
+	{
+		for (size_t x = 0; x < image.width; ++x)
+		{
+			TriangleFactor factor = { 0 };
+			factor = inTriangle(x + 0.5, y + 0.5, tri);
+
+			if ((factor.gama >= 0) && (factor.beta >= 0) && (factor.alpha >= 0))
+			{
+
+				//R/G/B/A = alpha*A + beta*B + gama*C
+
+				uv.x = factor.alpha * uva.x + factor.beta * uvb.x + factor.gama * uvc.x;
+				uv.y = factor.alpha * uva.y + factor.beta * uvb.y + factor.gama * uvc.y;
+
+				Color color = getUVRotateSample(uv, myImage);
+				pixel[image.sizeofRow * y + x * image.chanel + 0] = color.r;
+				pixel[image.sizeofRow * y + x * image.chanel + 1] = color.g;
+				pixel[image.sizeofRow * y + x * image.chanel + 2] = color.b;
+				pixel[image.sizeofRow * y + x * image.chanel + 3] = color.a;
+
+
+			}
+
+		}
+	}
+
+	SDLDraw(pixel, image.width, image.height, image.sizeofRow, SDL_PIXELFORMAT_RGBA32);
+
+	free(pixel);
+	free(image.pixel);
+	free(myImage.pixel);
+	pixel = NULL;
+	image.pixel = NULL;
+	myImage.pixel = NULL;
+}
+
 int main()
 {
 	//readPNG("9.png", SDL_PIXELFORMAT_RGBA32);
 	//drawTriangle();
-	drawUVTri();
+	//drawUVTri();
 	//drawUVTriangle();
+	//drawRotateTri();
+	//drawRA();
+	float angle = 0;
+	rotateUVbyAngle(angle);
+	while (true)
+	{
+		angle = angle - 5.0f;
+		printf("angle = %f \n", angle);
+		rotateUVbyAngle(angle);
+		SDL_Delay(200);
+	}
+
 	std::cout << "Hello World!\n";
 	return 0;
 }
